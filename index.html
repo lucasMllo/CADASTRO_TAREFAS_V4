@@ -1,360 +1,119 @@
 
-class Produto {
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sistema de Estoque - POO & CRUD V4</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Cadastro de Produtos</h1>
+
+        <form id="produto-form">
+
+            <div class="form-group">
+                <label for="nome">Nome do produto:</label>
+                <input
+                    type="text"
+                    id="nome"
+                    placeholder="Ex. Notebook"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="preco">Preço (R$):</label>
+                <input
+                    type="number"
+                    id="preco"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="Ex. 3500.00"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="quantidade">Quantidade:</label>
+                <input
+                    type="number"
+                    id="quantidade"
+                    min="1"
+                    step="1"
+                    placeholder="Ex. 5"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-primary">
+                Adicionar Produto
+            </button>
+
+        </form>
+
+        <div class="busca-container">
+
+            <label for="campo-busca">
+                Pesquisar no Estoque
+            </label>
+
+            <input
+                type="text"
+                id="campo-busca"
+                placeholder="Digite o nome do produto para filtrar..."
+            >
+
+        </div>
+
+        <div class="resumo-container">
+
+            <h3 id="total-estoque">
+                Total em Estoque: R$ 0,00
+            </h3>
+
+            <button id="limpar-tabela" class="btn-danger" type="button">
+                Limpar Tudo
+            </button>
+
+        </div>
+
+        <table id="tabela-produtos">
+
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Preço Un.</th>
+                    <th>Qtd.</th>
+                    <th>Subtotal</th>
+                    <th>Ações</th> 
+                </tr>
+            </thead>
+
+            <tbody>
+            </tbody>
+
+        </table>
 
-    constructor(nome, preco, quantidade) {
-        this.nome = nome;
-        this.preco = parseFloat(preco);
-        this.quantidade = parseInt(quantidade);
-    }
+        <!-- Rodapé com assinatura do desenvolvedor -->
+        <footer class="footer">
+            <p>
+                Site desenvolvido por
+                <strong>LUCAS MELLO</strong>
+                © 2026
+            </p>
+        </footer>
 
-    calcularSubtotal() {
-        return this.preco * this.quantidade;
-    }
+    </div>
 
-}
+    <script src="script.js"></script>
 
-const listaDeProdutos = [];
-
-let indiceEdicao = null;
-
-const CHAVE_STORAGE = "sistema_estoque_produtos";
-
-function salvarNoLocalStorage() {
-
-    const listaEmTexto = JSON.stringify(listaDeProdutos);
-
-    localStorage.setItem(CHAVE_STORAGE, listaEmTexto);
-
-}
-
-function carregarDoLocalStorage() {
-
-    const dadosSalvos = localStorage.getItem(CHAVE_STORAGE);
-
-    if (dadosSalvos) {
-
-        const produtosObjetos = JSON.parse(dadosSalvos);
-
-        produtosObjetos.forEach((prod) => {
-
-            const produtoInstanciado = new Produto(
-                prod.nome,
-                prod.preco,
-                prod.quantidade
-            );
-
-            listaDeProdutos.push(produtoInstanciado);
-
-        });
-
-    }
-
-}
-
-const formProduto = document.getElementById("produto-form");
-
-const btnSubmit = formProduto.querySelector(
-    "button[type='submit']"
-);
-
-const btnLimparTudo = document.getElementById("limpar-tabela");
-
-const totalEstoqueEl = document.getElementById("total-estoque");
-
-const campoBusca = document.getElementById("campo-busca");
-
-function prepararEdicao(index) {
-
-    const produto = listaDeProdutos[index];
-
-    document.getElementById("nome").value = produto.nome;
-
-    document.getElementById("preco").value = produto.preco;
-
-    document.getElementById("quantidade").value = produto.quantidade;
-
-    indiceEdicao = index;
-
-    btnSubmit.textContent = "Salvar Alterações";
-
-    btnSubmit.classList.add("btn-warning");
-
-}
-
-function obterProdutosFiltrados() {
-
-    const termo = campoBusca.value.trim().toLowerCase();
-
-    if (!termo) {
-
-        return listaDeProdutos.map((produto, index) => ({
-            produto,
-            index
-        }));
-
-    }
-
-    return listaDeProdutos
-        .map((produto, index) => ({
-            produto,
-            index
-        }))
-        .filter(item =>
-            item.produto.nome.toLowerCase().includes(termo)
-        );
-
-}
-
-formProduto.addEventListener("submit", function (event) {
-
-    event.preventDefault();
-
-    const nome = document.getElementById("nome").value.trim();
-
-    const preco = parseFloat(
-        document.getElementById("preco").value
-    );
-
-    const quantidade = Number(
-        document.getElementById("quantidade").value
-    );
-
-    if (!nome) {
-
-        alert("Por favor, informe um nome válido para o produto.");
-
-        return;
-
-    }
-
-    if (
-        !Number.isFinite(preco) ||
-        preco <= 0 ||
-        !Number.isInteger(quantidade) ||
-        quantidade <= 0
-    ) {
-
-        alert(
-            "O preço e a quantidade devem ser valores numéricos maiores que zero."
-        );
-
-        return;
-
-    }
-
-    const produtoValido = new Produto(
-        nome,
-        preco,
-        quantidade
-    );
-
-    if (indiceEdicao === null) {
-
-        listaDeProdutos.push(produtoValido);
-
-    } else {
-
-        listaDeProdutos[indiceEdicao] = produtoValido;
-
-        indiceEdicao = null;
-
-        btnSubmit.textContent = "Adicionar Produto";
-
-        btnSubmit.classList.remove("btn-warning");
-
-    }
-
-    salvarNoLocalStorage();
-
-    formProduto.reset();
-
-    atualizarInterface();
-
-});
-
-campoBusca.addEventListener("input", function () {
-
-    atualizarInterface();
-
-});
-
-btnLimparTudo.addEventListener("click", function () {
-
-    if (listaDeProdutos.length === 0) {
-
-        alert("A tabela já está vazia!");
-
-        return;
-
-    }
-
-    if (confirm("Tem certeza que deseja remover todos os produtos?")) {
-
-        listaDeProdutos.length = 0;
-
-        localStorage.removeItem(CHAVE_STORAGE);
-
-        indiceEdicao = null;
-
-        btnSubmit.textContent = "Adicionar Produto";
-
-        btnSubmit.classList.remove("btn-warning");
-
-        formProduto.reset();
-
-        atualizarInterface();
-
-    }
-
-});
-
-function removerProduto(index) {
-
-    listaDeProdutos.splice(index, 1);
-
-    if (indiceEdicao === index) {
-
-        indiceEdicao = null;
-
-        btnSubmit.textContent = "Adicionar Produto";
-
-        btnSubmit.classList.remove("btn-warning");
-
-        formProduto.reset();
-
-    } else if (indiceEdicao !== null && indiceEdicao > index) {
-
-        indiceEdicao--;
-
-    }
-
-    salvarNoLocalStorage();
-
-    atualizarInterface();
-
-}
-
-function atualizarTotalEstoque(produtosVisiveis) {
-
-    const total = produtosVisiveis.reduce((acc, item) => {
-
-        return acc + item.produto.calcularSubtotal();
-
-    }, 0);
-
-    totalEstoqueEl.textContent =
-        `Total em Estoque: R$ ${total.toFixed(2).replace(".", ",")}`;
-
-}
-
-function renderizarTabela(produtosVisiveis) {
-
-    const tabelaBody = document.querySelector(
-        "#tabela-produtos tbody"
-    );
-
-    tabelaBody.innerHTML = "";
-
-    if (produtosVisiveis.length === 0) {
-
-        const linha = document.createElement("tr");
-
-        const coluna = document.createElement("td");
-
-        coluna.colSpan = 5;
-
-        coluna.classList.add("mensagem-vazia");
-
-        coluna.textContent = campoBusca.value.trim()
-            ? "Nenhum produto encontrado!"
-            : "Nenhum produto cadastrado!";
-
-        linha.appendChild(coluna);
-
-        tabelaBody.appendChild(linha);
-
-        return;
-
-    }
-
-    produtosVisiveis.forEach((item) => {
-
-        const produto = item.produto;
-
-        const indexOriginal = item.index;
-
-        const linha = document.createElement("tr");
-
-        const celNome = document.createElement("td");
-        celNome.textContent = produto.nome;
-
-        const celPreco = document.createElement("td");
-        celPreco.textContent =
-            `R$ ${produto.preco.toFixed(2).replace(".", ",")}`;
-
-        const celQuantidade = document.createElement("td");
-        celQuantidade.textContent = produto.quantidade;
-
-        const celSubtotal = document.createElement("td");
-        celSubtotal.textContent =
-            `R$ ${produto.calcularSubtotal().toFixed(2).replace(".", ",")}`;
-
-        const celAcoes = document.createElement("td");
-
-        const btnEditar = document.createElement("button");
-
-        btnEditar.textContent = "Editar";
-
-        btnEditar.classList.add("btn-editar");
-
-        btnEditar.addEventListener("click", () => {
-
-            prepararEdicao(indexOriginal);
-
-        });
-
-        const btnRemover = document.createElement("button");
-
-        btnRemover.textContent = "Remover";
-
-        btnRemover.classList.add("btn-remover");
-
-        btnRemover.addEventListener("click", () => {
-
-            removerProduto(indexOriginal);
-
-        });
-
-        celAcoes.appendChild(btnEditar);
-
-        celAcoes.appendChild(btnRemover);
-
-        linha.appendChild(celNome);
-
-        linha.appendChild(celPreco);
-
-        linha.appendChild(celQuantidade);
-
-        linha.appendChild(celSubtotal);
-
-        linha.appendChild(celAcoes);
-
-        tabelaBody.appendChild(linha);
-
-    });
-
-}
-
-function atualizarInterface() {
-
-    const produtosVisiveis = obterProdutosFiltrados();
-
-    renderizarTabela(produtosVisiveis);
-
-    atualizarTotalEstoque(produtosVisiveis);
-
-}
-
-carregarDoLocalStorage();
-
-atualizarInterface();
+</body>
+</html>
